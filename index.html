@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-
+        
         body {
             font-family: 'Segoe UI', sans-serif;
             background: #0f0f1a;
@@ -39,6 +39,9 @@
             display: flex;
             background: #16213e;
             border-bottom: 1px solid rgba(255,255,255,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
         .tab {
@@ -48,7 +51,7 @@
             background: transparent;
             color: rgba(255,255,255,0.5);
             cursor: pointer;
-            font-size: 13px;
+            font-size: 12px;
             border-bottom: 2px solid transparent;
             transition: all 0.3s;
         }
@@ -71,11 +74,14 @@
         }
 
         .card-title {
-            font-size: 13px;
+            font-size: 12px;
             opacity: 0.5;
             margin-bottom: 12px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
 
         .currency-item {
@@ -89,7 +95,7 @@
         }
 
         .currency-item:last-child { border-bottom: none; }
-        .currency-item:hover { opacity: 0.8; }
+        .currency-item:active { opacity: 0.7; }
 
         .cur-left {
             display: flex;
@@ -97,7 +103,7 @@
             gap: 12px;
         }
 
-        .cur-emoji { font-size: 28px; }
+        .cur-emoji { font-size: 26px; }
 
         .cur-name {
             font-weight: 600;
@@ -114,21 +120,11 @@
 
         .cur-rate {
             font-weight: 700;
-            font-size: 16px;
+            font-size: 15px;
             color: #00d4ff;
         }
 
-        .cur-change {
-            font-size: 11px;
-            margin-top: 3px;
-        }
-
-        .up { color: #00ff88; }
-        .down { color: #ff4444; }
-
-        .input-group {
-            margin-bottom: 16px;
-        }
+        .input-group { margin-bottom: 16px; }
 
         .input-label {
             font-size: 12px;
@@ -160,9 +156,9 @@
             background: #1a1a2e;
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 12px;
-            padding: 14px 16px;
+            padding: 14px 12px;
             color: #fff;
-            font-size: 14px;
+            font-size: 13px;
             outline: none;
             cursor: pointer;
         }
@@ -177,12 +173,8 @@
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            transition: opacity 0.3s;
             margin-top: 12px;
         }
-
-        .btn:hover { opacity: 0.9; }
-        .btn:active { opacity: 0.7; }
 
         .result-box {
             background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(123,47,247,0.1));
@@ -191,13 +183,10 @@
             padding: 20px;
             text-align: center;
             margin-top: 16px;
-            display: none;
         }
 
-        .result-box.show { display: block; }
-
         .result-amount {
-            font-size: 28px;
+            font-size: 26px;
             font-weight: 700;
             color: #00d4ff;
         }
@@ -221,13 +210,6 @@
             align-items: center;
             justify-content: center;
             margin: 12px auto;
-            transition: all 0.3s;
-        }
-
-        .swap-btn:hover { background: rgba(0,212,255,0.2); }
-
-        .bar-chart {
-            margin-top: 8px;
         }
 
         .bar-row {
@@ -245,13 +227,13 @@
         }
 
         .bar-fill {
-            height: 24px;
+            height: 28px;
             border-radius: 6px;
             background: linear-gradient(90deg, #00d4ff, #7b2ff7);
             display: flex;
             align-items: center;
             padding: 0 8px;
-            min-width: 60px;
+            min-width: 50px;
             transition: width 0.5s ease;
         }
 
@@ -268,8 +250,8 @@
         }
 
         .spinner {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border: 3px solid rgba(0,212,255,0.2);
             border-top-color: #00d4ff;
             border-radius: 50%;
@@ -277,9 +259,7 @@
             margin: 0 auto 16px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
         .info-row {
             display: flex;
@@ -296,21 +276,21 @@
         .refresh-btn {
             background: rgba(0,212,255,0.1);
             border: 1px solid rgba(0,212,255,0.2);
-            border-radius: 10px;
-            padding: 8px 16px;
+            border-radius: 8px;
+            padding: 4px 12px;
             color: #00d4ff;
             font-size: 13px;
             cursor: pointer;
-            float: right;
-            margin-top: -4px;
         }
 
-        .update-time {
-            font-size: 11px;
-            opacity: 0.4;
+        .error-box {
             text-align: center;
-            margin-top: 8px;
+            padding: 30px;
+            color: #ff4444;
         }
+
+        .up { color: #00ff88; }
+        .down { color: #ff4444; }
     </style>
 </head>
 <body>
@@ -321,10 +301,10 @@
 </div>
 
 <div class="tabs">
-    <button class="tab active" onclick="showPage('rates')">📊 Kurslar</button>
-    <button class="tab" onclick="showPage('calc')">🔄 Hisob</button>
-    <button class="tab" onclick="showPage('graph')">📈 Grafik</button>
-    <button class="tab" onclick="showPage('info')">ℹ️ Info</button>
+    <button class="tab active" onclick="showPage('rates', this)">📊 Kurslar</button>
+    <button class="tab" onclick="showPage('calc', this)">🔄 Hisob</button>
+    <button class="tab" onclick="showPage('graph', this)">📈 Grafik</button>
+    <button class="tab" onclick="showPage('info', this)">ℹ️ Info</button>
 </div>
 
 <!-- KURSLAR -->
@@ -332,7 +312,7 @@
     <div class="card">
         <div class="card-title">
             Bugungi kurslar
-            <button class="refresh-btn" onclick="loadRates()">🔄</button>
+            <button class="refresh-btn" onclick="loadRates()">🔄 Yangilash</button>
         </div>
         <div id="rates-list">
             <div class="loading">
@@ -341,7 +321,6 @@
             </div>
         </div>
     </div>
-    <p class="update-time" id="rates-time"></p>
 </div>
 
 <!-- HISOBLASH -->
@@ -350,7 +329,7 @@
         <div class="card-title">Valyuta hisoblash</div>
 
         <div class="input-group">
-            <label class="input-label">Miqdor</label>
+            <label class="input-label">Miqdor va valyuta</label>
             <div class="input-row">
                 <input type="number" id="calc-amount" placeholder="100" oninput="calculate()">
                 <select id="calc-from" onchange="calculate()">
@@ -360,6 +339,8 @@
                     <option value="GBP">GBP 💷</option>
                     <option value="JPY">JPY 🇯🇵</option>
                     <option value="CNY">CNY 🇨🇳</option>
+                    <option value="KZT">KZT 🇰🇿</option>
+                    <option value="TRY">TRY 🇹🇷</option>
                     <option value="UZS">UZS 🇺🇿</option>
                 </select>
             </div>
@@ -370,7 +351,7 @@
         <div class="input-group">
             <label class="input-label">Natija</label>
             <div class="input-row">
-                <input type="number" id="calc-result" placeholder="0" readonly>
+                <input type="number" id="calc-result" placeholder="0" readonly style="opacity:0.7">
                 <select id="calc-to" onchange="calculate()">
                     <option value="UZS">UZS 🇺🇿</option>
                     <option value="USD">USD 💵</option>
@@ -379,11 +360,13 @@
                     <option value="GBP">GBP 💷</option>
                     <option value="JPY">JPY 🇯🇵</option>
                     <option value="CNY">CNY 🇨🇳</option>
+                    <option value="KZT">KZT 🇰🇿</option>
+                    <option value="TRY">TRY 🇹🇷</option>
                 </select>
             </div>
         </div>
 
-        <div class="result-box show" id="result-box">
+        <div class="result-box">
             <div class="result-amount" id="result-main">—</div>
             <div class="result-label" id="result-label">Miqdor kiriting</div>
         </div>
@@ -395,13 +378,14 @@
     <div class="card">
         <div class="card-title">7 kunlik grafik</div>
         <div class="input-row" style="margin-bottom:16px">
-            <select id="graph-currency" onchange="loadGraph()" style="flex:1">
-                <option value="USD">USD 💵</option>
-                <option value="EUR">EUR 💶</option>
-                <option value="RUB">RUB 💴</option>
-                <option value="GBP">GBP 💷</option>
-                <option value="CNY">CNY 🇨🇳</option>
-                <option value="TRY">TRY 🇹🇷</option>
+            <select id="graph-currency" onchange="loadGraph()" style="flex:1;width:100%">
+                <option value="USD">USD 💵 Dollar</option>
+                <option value="EUR">EUR 💶 Yevro</option>
+                <option value="RUB">RUB 💴 Rubl</option>
+                <option value="GBP">GBP 💷 Funt</option>
+                <option value="CNY">CNY 🇨🇳 Yuan</option>
+                <option value="TRY">TRY 🇹🇷 Lira</option>
+                <option value="KZT">KZT 🇰🇿 Tenge</option>
             </select>
         </div>
         <div id="graph-container">
@@ -463,7 +447,6 @@
 </div>
 
 <script>
-    // Telegram Web App
     const tg = window.Telegram.WebApp;
     tg.ready();
     tg.expand();
@@ -479,14 +462,12 @@
         'TRY': ['Lira', '🇹🇷'],
         'AED': ['Dirham', '🇦🇪'],
         'CHF': ['Frank', '🇨🇭'],
-        'CAD': ['Dollar', '🇨🇦'],
-        'KRW': ['Von', '🇰🇷'],
         'UZS': ["So'm", '🇺🇿']
     };
 
     let ratesData = {};
 
-    // Kurslarni yuklash
+    // CORS proxy orqali yuklash
     async function loadRates() {
         document.getElementById('rates-list').innerHTML = `
             <div class="loading">
@@ -494,21 +475,28 @@
                 <p>Yuklanmoqda...</p>
             </div>`;
         try {
-            const res = await fetch('https://cbu.uz/uz/arkhiv-kursov-valyut/json/');
-            const data = await res.json();
+            const proxyUrl = 'https://api.allorigins.win/get?url=' +
+                encodeURIComponent('https://cbu.uz/uz/arkhiv-kursov-valyut/json/');
+            const res = await fetch(proxyUrl);
+            const raw = await res.json();
+            const data = JSON.parse(raw.contents);
+
             ratesData = {};
             data.forEach(item => {
                 ratesData[item.Ccy] = parseFloat(item.Rate);
             });
+
             renderRates();
             const now = new Date();
             document.getElementById('update-time').textContent =
                 `Yangilandi: ${now.toLocaleTimeString()}`;
-            document.getElementById('rates-time').textContent =
-                `📡 CBU • ${now.toLocaleDateString()}`;
         } catch(e) {
-            document.getElementById('rates-list').innerHTML =
-                '<p style="text-align:center;opacity:0.5;padding:20px"> ❌ Internet xatoligi</p>';
+            document.getElementById('rates-list').innerHTML = `
+                <div class="error-box">
+                    ❌ Kurslarni yuklab bo'lmadi<br>
+                    <small>Internetni tekshiring</small><br><br>
+                    <button class="refresh-btn" onclick="loadRates()">🔄 Qayta urinish</button>
+                </div>`;
         }
     }
 
@@ -518,8 +506,9 @@
         currencies.forEach(cur => {
             if (ratesData[cur]) {
                 const info = CURRENCY_NAMES[cur] || [cur, '🔹'];
+                const rate = ratesData[cur].toLocaleString('uz-UZ', {maximumFractionDigits: 2});
                 html += `
-                <div class="currency-item" onclick="selectCurrency('${cur}')">
+                <div class="currency-item" onclick="quickCalc('${cur}')">
                     <div class="cur-left">
                         <span class="cur-emoji">${info[1]}</span>
                         <div>
@@ -528,17 +517,18 @@
                         </div>
                     </div>
                     <div class="cur-right">
-                        <div class="cur-rate">${ratesData[cur].toLocaleString('uz-UZ', {maximumFractionDigits: 2})} so'm</div>
+                        <div class="cur-rate">${rate} so'm</div>
                     </div>
                 </div>`;
             }
         });
-        document.getElementById('rates-list').innerHTML = html;
+        document.getElementById('rates-list').innerHTML = html || '<p style="text-align:center;opacity:0.5;padding:20px">Ma\'lumot yo\'q</p>';
     }
 
-    function selectCurrency(cur) {
+    function quickCalc(cur) {
         document.getElementById('calc-from').value = cur;
-        showPage('calc');
+        document.getElementById('calc-amount').value = 1;
+        showPage('calc', document.querySelectorAll('.tab')[1]);
         calculate();
     }
 
@@ -548,26 +538,25 @@
         const from = document.getElementById('calc-from').value;
         const to = document.getElementById('calc-to').value;
 
-        if (!amount || !ratesData) {
-            document.getElementById('calc-result').value = '';
+        if (!amount || Object.keys(ratesData).length === 0) {
             document.getElementById('result-main').textContent = '—';
             document.getElementById('result-label').textContent = 'Miqdor kiriting';
             return;
         }
 
         let result;
-        if (from === 'UZS' && to !== 'UZS') {
-            result = amount / ratesData[to];
-        } else if (from !== 'UZS' && to === 'UZS') {
-            result = amount * ratesData[from];
-        } else if (from !== 'UZS' && to !== 'UZS') {
-            const inUzs = amount * ratesData[from];
-            result = inUzs / ratesData[to];
+        const fromRate = ratesData[from] || 1;
+        const toRate = ratesData[to] || 1;
+
+        if (from === 'UZS') {
+            result = amount / toRate;
+        } else if (to === 'UZS') {
+            result = amount * fromRate;
         } else {
-            result = amount;
+            result = (amount * fromRate) / toRate;
         }
 
-        document.getElementById('calc-result').value = result.toFixed(2);
+        document.getElementById('calc-result').value = result.toFixed(4);
         document.getElementById('result-main').textContent =
             `${result.toLocaleString('uz-UZ', {maximumFractionDigits: 2})} ${to}`;
         document.getElementById('result-label').textContent =
@@ -591,16 +580,22 @@
                 <div class="spinner"></div>
                 <p>Yuklanmoqda...</p>
             </div>`;
+
         const history = {};
         const promises = [];
+
         for (let i = 6; i >= 0; i--) {
             const date = new Date();
             date.setDate(date.getDate() - i);
             const dateStr = date.toISOString().split('T')[0];
+            const proxyUrl = 'https://api.allorigins.win/get?url=' +
+                encodeURIComponent(`https://cbu.uz/uz/arkhiv-kursov-valyut/json/${cur}/${dateStr}/`);
+
             promises.push(
-                fetch(`https://cbu.uz/uz/arkhiv-kursov-valyut/json/${cur}/${dateStr}/`)
+                fetch(proxyUrl)
                     .then(r => r.json())
-                    .then(data => {
+                    .then(raw => {
+                        const data = JSON.parse(raw.contents);
                         if (data && data[0]) {
                             history[dateStr] = parseFloat(data[0].Rate);
                         }
@@ -608,6 +603,7 @@
                     .catch(() => {})
             );
         }
+
         await Promise.all(promises);
         renderGraph(history, cur);
     }
@@ -615,28 +611,64 @@
     function renderGraph(history, cur) {
         const dates = Object.keys(history).sort();
         const values = dates.map(d => history[d]);
+
         if (values.length < 2) {
             document.getElementById('graph-container').innerHTML =
-                '<p style="text-align:center;opacity:0.5;padding:20px"> ❌ Ma\'lumot yetarli emas</p>';
+                '<p style="text-align:center;opacity:0.5;padding:20px">❌ Ma\'lumot yetarli emas</p>';
             return;
         }
+
         const max = Math.max(...values);
         const min = Math.min(...values);
         const change = ((values[values.length-1] - values[0]) / values[0] * 100).toFixed(2);
         const changeClass = change >= 0 ? 'up' : 'down';
         const changeSign = change >= 0 ? '+' : '';
 
-        let html = `<p class="${changeClass}" style="text-align:center;margin-bottom:16px;font-weight:700">
-            ${changeSign}${change}% (7 kun)</p>
-            <div class="bar-chart">`;
+        let html = `
+        <p class="${changeClass}" style="text-align:center;margin-bottom:16px;font-weight:700;font-size:16px">
+            ${changeSign}${change}% (7 kun)
+        </p>`;
 
         dates.forEach((d, i) => {
             const val = values[i];
             const pct = max === min ? 60 : ((val - min) / (max - min) * 55 + 25);
             const shortDate = d.slice(5);
+            const isMax = val === max;
+            const isMin = val === min;
             html += `
             <div class="bar-row">
                 <span class="bar-date">${shortDate}</span>
                 <div class="bar-fill" style="width:${pct}%">
                     <span class="bar-val">${val.toLocaleString('uz-UZ', {maximumFractionDigits: 0})}</span>
-   
+                </div>
+                ${isMax ? '<span style="font-size:14px">⬆️</span>' : ''}
+                ${isMin ? '<span style="font-size:14px">⬇️</span>' : ''}
+            </div>`;
+        });
+
+        html += `
+        <div style="display:flex;justify-content:space-between;margin-top:12px;font-size:12px;opacity:0.5">
+            <span>⬇️ Min: ${min.toLocaleString()}</span>
+            <span>⬆️ Max: ${max.toLocaleString()}</span>
+        </div>`;
+
+        document.getElementById('graph-container').innerHTML = html;
+    }
+
+    function showPage(name, el) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        document.getElementById('page-' + name).classList.add('active');
+        if (el) el.classList.add('active');
+        if (name === 'graph') loadGraph();
+    }
+
+    function closeApp() {
+        tg.close();
+    }
+
+    // Ishga tushirish
+    loadRates();
+</script>
+</body>
+</html>
