@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💱 Valyuta Bot</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #0f0f1a;
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            padding: 20px 16px;
+            text-align: center;
+            border-bottom: 1px solid rgba(0,212,255,0.2);
+        }
+
+        .header h1 {
+            font-size: 22px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .header p {
+            font-size: 12px;
+            opacity: 0.5;
+        }
+
+        .tabs {
+            display: flex;
+            background: #16213e;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 8px;
+            border: none;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #00d4ff;
+            border-bottom-color: #00d4ff;
+            background: rgba(0,212,255,0.05);
+        }
+
+        .page { display: none; padding: 16px; }
+        .page.active { display: block; }
+
+        .card {
+            background: #16213e;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .card-title {
+            font-size: 13px;
+            opacity: 0.5;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .currency-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .currency-item:last-child { border-bottom: none; }
+        .currency-item:hover { opacity: 0.8; }
+
+        .cur-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .cur-emoji { font-size: 28px; }
+
+        .cur-name {
+            font-weight: 600;
+            font-size: 16px;
+        }
+
+        .cur-full {
+            font-size: 11px;
+            opacity: 0.4;
+            margin-top: 2px;
+        }
+
+        .cur-right { text-align: right; }
+
+        .cur-rate {
+            font-weight: 700;
+            font-size: 16px;
+            color: #00d4ff;
+        }
+
+        .cur-change {
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .up { color: #00ff88; }
+        .down { color: #ff4444; }
+
+        .input-group {
+            margin-bottom: 16px;
+        }
+
+        .input-label {
+            font-size: 12px;
+            opacity: 0.5;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: border 0.3s;
+        }
+
+        input:focus { border-color: #00d4ff; }
+
+        select {
+            background: #1a1a2e;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 14px 16px;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #00d4ff, #7b2ff7);
+            color: #fff;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.3s;
+            margin-top: 12px;
+        }
+
+        .btn:hover { opacity: 0.9; }
+        .btn:active { opacity: 0.7; }
+
+        .result-box {
+            background: linear-gradient(135deg, rgba(0,212,255,0.1), rgba(123,47,247,0.1));
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            margin-top: 16px;
+            display: none;
+        }
+
+        .result-box.show { display: block; }
+
+        .result-amount {
+            font-size: 28px;
+            font-weight: 700;
+            color: #00d4ff;
+        }
+
+        .result-label {
+            font-size: 13px;
+            opacity: 0.5;
+            margin-top: 6px;
+        }
+
+        .swap-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.3);
+            color: #00d4ff;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 12px auto;
+            transition: all 0.3s;
+        }
+
+        .swap-btn:hover { background: rgba(0,212,255,0.2); }
+
+        .bar-chart {
+            margin-top: 8px;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .bar-date {
+            font-size: 11px;
+            opacity: 0.5;
+            width: 40px;
+            flex-shrink: 0;
+        }
+
+        .bar-fill {
+            height: 24px;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #00d4ff, #7b2ff7);
+            display: flex;
+            align-items: center;
+            padding: 0 8px;
+            min-width: 60px;
+            transition: width 0.5s ease;
+        }
+
+        .bar-val {
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            opacity: 0.5;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0,212,255,0.2);
+            border-top-color: #00d4ff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 14px;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+        .info-label { opacity: 0.5; }
+        .info-value { font-weight: 600; color: #00d4ff; }
+
+        .refresh-btn {
+            background: rgba(0,212,255,0.1);
+            border: 1px solid rgba(0,212,255,0.2);
+            border-radius: 10px;
+            padding: 8px 16px;
+            color: #00d4ff;
+            font-size: 13px;
+            cursor: pointer;
+            float: right;
+            margin-top: -4px;
+        }
+
+        .update-time {
+            font-size: 11px;
+            opacity: 0.4;
+            text-align: center;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>💱 Valyuta Bot</h1>
+    <p id="update-time">Yuklanmoqda...</p>
+</div>
+
+<div class="tabs">
+    <button class="tab active" onclick="showPage('rates')">📊 Kurslar</button>
+    <button class="tab" onclick="showPage('calc')">🔄 Hisob</button>
+    <button class="tab" onclick="showPage('graph')">📈 Grafik</button>
+    <button class="tab" onclick="showPage('info')">ℹ️ Info</button>
+</div>
+
+<!-- KURSLAR -->
+<div class="page active" id="page-rates">
+    <div class="card">
+        <div class="card-title">
+            Bugungi kurslar
+            <button class="refresh-btn" onclick="loadRates()">🔄</button>
+        </div>
+        <div id="rates-list">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Yuklanmoqda...</p>
+            </div>
+        </div>
+    </div>
+    <p class="update-time" id="rates-time"></p>
+</div>
+
+<!-- HISOBLASH -->
+<div class="page" id="page-calc">
+    <div class="card">
+        <div class="card-title">Valyuta hisoblash</div>
+
+        <div class="input-group">
+            <label class="input-label">Miqdor</label>
+            <div class="input-row">
+                <input type="number" id="calc-amount" placeholder="100" oninput="calculate()">
+                <select id="calc-from" onchange="calculate()">
+                    <option value="USD">USD 💵</option>
+                    <option value="EUR">EUR 💶</option>
+                    <option value="RUB">RUB 💴</option>
+                    <option value="GBP">GBP 💷</option>
+                    <option value="JPY">JPY 🇯🇵</option>
+                    <option value="CNY">CNY 🇨🇳</option>
+                    <option value="UZS">UZS 🇺🇿</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="swap-btn" onclick="swapCurrencies()">⇅</button>
+
+        <div class="input-group">
+            <label class="input-label">Natija</label>
+            <div class="input-row">
+                <input type="number" id="calc-result" placeholder="0" readonly>
+                <select id="calc-to" onchange="calculate()">
+                    <option value="UZS">UZS 🇺🇿</option>
+                    <option value="USD">USD 💵</option>
+                    <option value="EUR">EUR 💶</option>
+                    <option value="RUB">RUB 💴</option>
+                    <option value="GBP">GBP 💷</option>
+                    <option value="JPY">JPY 🇯🇵</option>
+                    <option value="CNY">CNY 🇨🇳</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="result-box show" id="result-box">
+            <div class="result-amount" id="result-main">—</div>
+            <div class="result-label" id="result-label">Miqdor kiriting</div>
+        </div>
+    </div>
+</div>
+
+<!-- GRAFIK -->
+<div class="page" id="page-graph">
+    <div class="card">
+        <div class="card-title">7 kunlik grafik</div>
+        <div class="input-row" style="margin-bottom:16px">
+            <select id="graph-currency" onchange="loadGraph()" style="flex:1">
+                <option value="USD">USD 💵</option>
+                <option value="EUR">EUR 💶</option>
+                <option value="RUB">RUB 💴</option>
+                <option value="GBP">GBP 💷</option>
+                <option value="CNY">CNY 🇨🇳</option>
+                <option value="TRY">TRY 🇹🇷</option>
+            </select>
+        </div>
+        <div id="graph-container">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Yuklanmoqda...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- INFO -->
+<div class="page" id="page-info">
+    <div class="card">
+        <div class="card-title">Bot haqida</div>
+        <div class="info-row">
+            <span class="info-label">Versiya</span>
+            <span class="info-value">2.0 Pro</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Manba</span>
+            <span class="info-value">CBU API</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Yangilanish</span>
+            <span class="info-value">Har kuni</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">Valyutalar</span>
+            <span class="info-value">25+</span>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">Buyruqlar</div>
+        <div class="info-row">
+            <span class="info-label">100 usd</span>
+            <span class="info-value">→ so'mga</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">ai USD</span>
+            <span class="info-value">→ tahlil</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">compare USD EUR</span>
+            <span class="info-value">→ taqqos</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">portfolio USD 100</span>
+            <span class="info-value">→ portfel</span>
+        </div>
+        <div class="info-row">
+            <span class="info-label">alert USD 13000 up</span>
+            <span class="info-value">→ xabar</span>
+        </div>
+    </div>
+
+    <button class="btn" onclick="closeApp()">✅ Yopish</button>
+</div>
+
+<script>
+    // Telegram Web App
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    const CURRENCY_NAMES = {
+        'USD': ['Dollar', '💵'],
+        'EUR': ['Yevro', '💶'],
+        'RUB': ['Rubl', '💴'],
+        'GBP': ['Funt', '💷'],
+        'JPY': ['Iyena', '🇯🇵'],
+        'CNY': ['Yuan', '🇨🇳'],
+        'KZT': ['Tenge', '🇰🇿'],
+        'TRY': ['Lira', '🇹🇷'],
+        'AED': ['Dirham', '🇦🇪'],
+        'CHF': ['Frank', '🇨🇭'],
+        'CAD': ['Dollar', '🇨🇦'],
+        'KRW': ['Von', '🇰🇷'],
+        'UZS': ["So'm", '🇺🇿']
+    };
+
+    let ratesData = {};
+
+    // Kurslarni yuklash
+    async function loadRates() {
+        document.getElementById('rates-list').innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Yuklanmoqda...</p>
+            </div>`;
+        try {
+            const res = await fetch('https://cbu.uz/uz/arkhiv-kursov-valyut/json/');
+            const data = await res.json();
+            ratesData = {};
+            data.forEach(item => {
+                ratesData[item.Ccy] = parseFloat(item.Rate);
+            });
+            renderRates();
+            const now = new Date();
+            document.getElementById('update-time').textContent =
+                `Yangilandi: ${now.toLocaleTimeString()}`;
+            document.getElementById('rates-time').textContent =
+                `📡 CBU • ${now.toLocaleDateString()}`;
+        } catch(e) {
+            document.getElementById('rates-list').innerHTML =
+                '<p style="text-align:center;opacity:0.5;padding:20px"> ❌ Internet xatoligi</p>';
+        }
+    }
+
+    function renderRates() {
+        const currencies = ['USD', 'EUR', 'RUB', 'GBP', 'JPY', 'CNY', 'KZT', 'TRY', 'AED', 'CHF'];
+        let html = '';
+        currencies.forEach(cur => {
+            if (ratesData[cur]) {
+                const info = CURRENCY_NAMES[cur] || [cur, '🔹'];
+                html += `
+                <div class="currency-item" onclick="selectCurrency('${cur}')">
+                    <div class="cur-left">
+                        <span class="cur-emoji">${info[1]}</span>
+                        <div>
+                            <div class="cur-name">${cur}</div>
+                            <div class="cur-full">${info[0]}</div>
+                        </div>
+                    </div>
+                    <div class="cur-right">
+                        <div class="cur-rate">${ratesData[cur].toLocaleString('uz-UZ', {maximumFractionDigits: 2})} so'm</div>
+                    </div>
+                </div>`;
+            }
+        });
+        document.getElementById('rates-list').innerHTML = html;
+    }
+
+    function selectCurrency(cur) {
+        document.getElementById('calc-from').value = cur;
+        showPage('calc');
+        calculate();
+    }
+
+    // Hisoblash
+    function calculate() {
+        const amount = parseFloat(document.getElementById('calc-amount').value);
+        const from = document.getElementById('calc-from').value;
+        const to = document.getElementById('calc-to').value;
+
+        if (!amount || !ratesData) {
+            document.getElementById('calc-result').value = '';
+            document.getElementById('result-main').textContent = '—';
+            document.getElementById('result-label').textContent = 'Miqdor kiriting';
+            return;
+        }
+
+        let result;
+        if (from === 'UZS' && to !== 'UZS') {
+            result = amount / ratesData[to];
+        } else if (from !== 'UZS' && to === 'UZS') {
+            result = amount * ratesData[from];
+        } else if (from !== 'UZS' && to !== 'UZS') {
+            const inUzs = amount * ratesData[from];
+            result = inUzs / ratesData[to];
+        } else {
+            result = amount;
+        }
+
+        document.getElementById('calc-result').value = result.toFixed(2);
+        document.getElementById('result-main').textContent =
+            `${result.toLocaleString('uz-UZ', {maximumFractionDigits: 2})} ${to}`;
+        document.getElementById('result-label').textContent =
+            `${amount.toLocaleString()} ${from} → ${to}`;
+    }
+
+    function swapCurrencies() {
+        const from = document.getElementById('calc-from');
+        const to = document.getElementById('calc-to');
+        const temp = from.value;
+        from.value = to.value;
+        to.value = temp;
+        calculate();
+    }
+
+    // Grafik
+    async function loadGraph() {
+        const cur = document.getElementById('graph-currency').value;
+        document.getElementById('graph-container').innerHTML = `
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Yuklanmoqda...</p>
+            </div>`;
+        const history = {};
+        const promises = [];
+        for (let i = 6; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            const dateStr = date.toISOString().split('T')[0];
+            promises.push(
+                fetch(`https://cbu.uz/uz/arkhiv-kursov-valyut/json/${cur}/${dateStr}/`)
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data && data[0]) {
+                            history[dateStr] = parseFloat(data[0].Rate);
+                        }
+                    })
+                    .catch(() => {})
+            );
+        }
+        await Promise.all(promises);
+        renderGraph(history, cur);
+    }
+
+    function renderGraph(history, cur) {
+        const dates = Object.keys(history).sort();
+        const values = dates.map(d => history[d]);
+        if (values.length < 2) {
+            document.getElementById('graph-container').innerHTML =
+                '<p style="text-align:center;opacity:0.5;padding:20px"> ❌ Ma\'lumot yetarli emas</p>';
+            return;
+        }
+        const max = Math.max(...values);
+        const min = Math.min(...values);
+        const change = ((values[values.length-1] - values[0]) / values[0] * 100).toFixed(2);
+        const changeClass = change >= 0 ? 'up' : 'down';
+        const changeSign = change >= 0 ? '+' : '';
+
+        let html = `<p class="${changeClass}" style="text-align:center;margin-bottom:16px;font-weight:700">
+            ${changeSign}${change}% (7 kun)</p>
+            <div class="bar-chart">`;
+
+        dates.forEach((d, i) => {
+            const val = values[i];
+            const pct = max === min ? 60 : ((val - min) / (max - min) * 55 + 25);
+            const shortDate = d.slice(5);
+            html += `
+            <div class="bar-row">
+                <span class="bar-date">${shortDate}</span>
+                <div class="bar-fill" style="width:${pct}%">
+                    <span class="bar-val">${val.toLocaleString('uz-UZ', {maximumFractionDigits: 0})}</span>
+   
